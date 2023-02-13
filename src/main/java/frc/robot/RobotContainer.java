@@ -4,12 +4,20 @@
 
 package frc.robot;
 
+import com.kauailabs.navx.frc.AHRS; 
+
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -34,9 +42,19 @@ public class RobotContainer {
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
+  //navX
+  private final AHRS ahrs = new AHRS(SPI.Port.kMXP);
+
+  //shuffle board
+  private final ShuffleboardTab sbConfig = Shuffleboard.getTab("Config");
+  public final GenericEntry sbPos = sbConfig.add("yaw", ahrs.getYaw())
+     .withPosition(0, 0).getEntry();
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // Configure the trigger bindings
+
+    
+       // Configure the trigger bindings
     configureBindings();
     System.out.println("out of configure bindings");
 
@@ -72,10 +90,11 @@ public class RobotContainer {
     m_driverController.leftBumper()
         .onTrue(Commands.runOnce(() -> m_robotDrive.setMax(Constants.DriveConstants.kHalfSpeed)))
         .onFalse(Commands.runOnce(() -> m_robotDrive.setMax(Constants.DriveConstants.kMaxSpeed)));
-
+    m_driverController.a()
+        .onTrue(Commands.runOnce(() -> System.out.println(ahrs.getAngle())));
     }
-      
-  
+    
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
