@@ -12,9 +12,12 @@ import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -43,17 +46,20 @@ public class RobotContainer {
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
   //navX
-  private final AHRS ahrs = new AHRS(SPI.Port.kMXP);
+  private AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
   //shuffle board
   private final ShuffleboardTab sbConfig = Shuffleboard.getTab("Config");
-  public final GenericEntry sbPos = sbConfig.add("yaw", ahrs.getYaw())
-     .withPosition(0, 0).getEntry();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
 
-    
+    // NavX
+    try {
+      ahrs = new AHRS(Port.kMXP);
+  } catch (RuntimeException ex) {
+      DriverStation.reportError("Error with NavX" + ex.getMessage(), true);
+  }
        // Configure the trigger bindings
     configureBindings();
     System.out.println("out of configure bindings");
@@ -91,7 +97,7 @@ public class RobotContainer {
         .onTrue(Commands.runOnce(() -> m_robotDrive.setMax(Constants.DriveConstants.kHalfSpeed)))
         .onFalse(Commands.runOnce(() -> m_robotDrive.setMax(Constants.DriveConstants.kMaxSpeed)));
     m_driverController.a()
-        .onTrue(Commands.runOnce(() -> System.out.println(ahrs.getAngle())));
+        .onTrue(Commands.runOnce(() -> System.out.println(ahrs.getRawGyroZ())));
     }
     
 
